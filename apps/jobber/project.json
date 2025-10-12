@@ -9,21 +9,15 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "webpack-cli build",
-        "args": [
-          "--node-env=production"
-        ],
+        "args": ["--node-env=production"],
         "cwd": "apps/jobber"
       },
       "configurations": {
         "development": {
-          "args": [
-            "--node-env=development"
-          ]
+          "args": ["--node-env=development"]
         }
       },
-      "dependsOn": [
-        "generate-types"
-      ]
+      "dependsOn": ["generate-types"]
     },
     "generate-types": {
       "command": "prisma generate",
@@ -38,9 +32,7 @@
       }
     },
     "prune-lockfile": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
@@ -52,35 +44,26 @@
       }
     },
     "copy-workspace-modules": {
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "cache": true,
-      "outputs": [
-        "{workspaceRoot}/dist/apps/jobber/workspace_modules"
-      ],
+      "outputs": ["{workspaceRoot}/dist/apps/jobber/workspace_modules"],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
         "buildTarget": "build"
       }
     },
     "prune": {
-      "dependsOn": [
-        "prune-lockfile",
-        "copy-workspace-modules"
-      ],
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
       "executor": "nx:noop"
     },
     "serve": {
       "continuous": true,
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "options": {
         "buildTarget": "jobber:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": true
       },
       "configurations": {
         "development": {

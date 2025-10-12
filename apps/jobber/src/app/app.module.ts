@@ -4,13 +4,13 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriverConfig, ApolloDriver } from '@nestjs/apollo';
 import { UsersModule } from './users/users.module';
 @Module({
-  imports: [PrismaModule, GraphQLModule.forRoot<ApolloDriverConfig>({
-    driver: ApolloDriver,
-    autoSchemaFile: true,
-  }), UsersModule],
-  controllers: [],
-  providers: [],
+  imports: [
+    PrismaModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+    }),
+    UsersModule,
+  ],
 })
-export class AppModule { }
-
-
+export class AppModule {}

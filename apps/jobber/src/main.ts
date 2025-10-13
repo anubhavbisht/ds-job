@@ -13,7 +13,7 @@ async function bootstrap() {
   const globalPrefix = 'api';
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.setGlobalPrefix(globalPrefix);
-  const port = app.get(ConfigService).getOrThrow<number>('AUTH_PORT');
+  const port = app.get(ConfigService).getOrThrow<number>('PORT');
   await app.listen(port);
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`

@@ -18,7 +18,7 @@ async function bootstrap() {
   const port = app.get(ConfigService).getOrThrow<number>('PORT');
   await app.listen(port);
   Logger.log(
-    `🚀 Application jobber-auth is running on: http://localhost:${port}/${globalPrefix}`
+    `🚀 Application jobber-jobs is running on: http://localhost:${port}/${globalPrefix}`
   );
 }
 

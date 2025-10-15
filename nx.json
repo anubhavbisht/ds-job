@@ -38,7 +38,7 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/jobber-e2e/**/*"]
+      "exclude": ["apps/jobber-e2e/**/*", "apps/jobber-jobs-e2e/**/*"]
     }
   ]
 }

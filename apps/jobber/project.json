@@ -17,18 +17,20 @@
           "args": ["--node-env=development"]
         }
       },
-      "dependsOn": ["generate-types"]
+      "dependsOn": ["generate-prisma-types", "generate-ts-proto"]
     },
-    "generate-types": {
+    "generate-prisma-types": {
       "command": "prisma generate",
       "options": {
-        "cwd": "apps/jobber"
-      }
+        "cwd": "{projectRoot}",
+        "input": ["prisma/schema.prisma"]
+      },
+      "cache": true
     },
     "migrate-prisma": {
       "command": "prisma migrate dev",
       "options": {
-        "cwd": "apps/jobber"
+        "cwd": "{projectRoot}"
       }
     },
     "prune-lockfile": {
@@ -78,6 +80,9 @@
       "options": {
         "passWithNoTests": true
       }
+    },
+    "generate-ts-proto": {
+      "command": "nx generate-ts-proto"
     }
   }
 }

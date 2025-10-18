@@ -27,7 +27,6 @@ export class JobsService implements OnModuleInit {
     if (!job) {
       throw new BadRequestException(`Job with name ${name} not found`);
     }
-    console.log(`Executing job: ${name} sadfsd`);
     await (job.discoveredClass.instance as AbstractJob).execute();
     return job.meta;
   }

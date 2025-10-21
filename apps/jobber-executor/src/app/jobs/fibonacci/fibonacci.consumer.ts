@@ -13,7 +13,6 @@ export class FibonacciConsumer
   }
 
   protected async onMessage(data: FibonacciData): Promise<void> {
-    console.log('Received Fibonacci message:', data);
     const result = iterate(data.iteration);
     this.logger.log(result);
   }

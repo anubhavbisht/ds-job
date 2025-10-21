@@ -9,7 +9,7 @@ import { nestInit } from '@jobber/nestjs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await nestInit(app, 'Jobber-Jobs');
+  await nestInit(app, 'Jobber-Executor');
 }
 
 bootstrap();

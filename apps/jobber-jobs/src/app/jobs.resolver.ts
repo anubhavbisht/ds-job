@@ -20,6 +20,9 @@ export class JobsResolver {
   async executeJob(
     @Args('executeJobInput') executeJobInput: ExecuteJobInput
   ): Promise<Job> {
-    return this.jobsService.executeJob(executeJobInput.name);
+    return this.jobsService.executeJob(
+      executeJobInput.name,
+      executeJobInput.data
+    );
   }
 }

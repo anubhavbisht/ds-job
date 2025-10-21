@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug jobber with Nx",
+      "name": "Debug auth with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "jobber"],
+      "runtimeArgs": ["nx", "serve", "auth"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
@@ -15,16 +15,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/jobber/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/auth/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug jobber-jobs with Nx",
+      "name": "Debug jobs with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "jobber-jobs"],
+      "runtimeArgs": ["nx", "serve", "jobs"],
       "env": {
         "NODE_OPTIONS": "--inspect=9230"
       },
@@ -33,16 +33,16 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/jobber-jobs/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/jobs/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug jobber-executor with Nx",
+      "name": "Debug executor with Nx",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["nx", "serve", "jobber-executor"],
+      "runtimeArgs": ["nx", "serve", "executor"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },
@@ -51,7 +51,7 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/jobber-executor/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/executor/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

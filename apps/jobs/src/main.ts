@@ -8,7 +8,7 @@ import { AppModule } from './app/app.module';
 import { nestInit } from '@jobber/nestjs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
   await nestInit(app, 'jobs');
 }
 

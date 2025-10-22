@@ -3,19 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky",
-    "generate-ts-proto": "protoc --plugin=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./types ./proto/*.proto --ts_proto_opt=nestJs=true",
     "start": "nx run-many -t serve -p auth jobs executor"
-  },
-  "nx": {
-    "targets": {
-      "generate-ts-proto": {
-        "inputs": [
-          "{workspaceRoot}/proto/*.proto"
-        ],
-        "cache": "true"
-      }
-    }
   },
   "workspaces": [
     "apps/*",
@@ -23,35 +11,26 @@
   ],
   "private": true,
   "dependencies": {
-    "@apollo/server": "^5.0.0",
     "@as-integrations/express5": "^1.1.2",
-    "@golevelup/nestjs-discovery": "^5.0.0",
-    "@grpc/grpc-js": "^1.14.0",
-    "@grpc/proto-loader": "^0.8.0",
-    "@nestjs/apollo": "^13.2.1",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.0",
-    "@nestjs/graphql": "^13.2.0",
-    "@nestjs/jwt": "^11.0.1",
     "@nestjs/microservices": "^11.1.6",
-    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
-    "@prisma/client": "^6.17.1",
     "axios": "^1.6.0",
-    "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
-    "fibonacci": "^1.6.12",
-    "graphql": "^16.11.0",
-    "graphql-type-json": "^0.3.2",
-    "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1",
-    "pulsar-client": "^1.14.0",
+    "module-alias": "^2.2.3",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.0",
-    "ts-proto": "^2.7.7"
+    "rxjs": "^7.8.0"
+  },
+  "_moduleAliases": {
+    "@jobber/grpc": "dist/libs/grpc/main",
+    "@jobber/graphql": "dist/libs/graphql/main",
+    "@jobber/nestjs": "dist/libs/nestjs/main",
+    "@jobber/pulsar": "dist/libs/pulsar/main",
+    "@jobber/prisma": "dist/libs/prisma/main"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -69,11 +48,9 @@
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
-    "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.9",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
-    "@types/passport-jwt": "^4.0.1",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "husky": "^9.1.7",
@@ -83,12 +60,12 @@
     "lint-staged": "^16.2.4",
     "nx": "21.6.4",
     "prettier": "^2.6.2",
-    "prisma": "^6.17.1",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "webpack-merge": "^6.0.1"
   }
 }

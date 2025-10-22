@@ -1,0 +1,10 @@
+{
+  "name": "@jobber/grpc",
+  "version": "0.0.0",
+  "dependencies": {
+    "ts-proto": "^2.7.7",
+    "@grpc/grpc-js": "^1.14.0",
+    "@grpc/proto-loader": "^0.8.0"
+  },
+  "devDependencies": {}
+}

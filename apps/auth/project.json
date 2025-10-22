@@ -17,7 +17,7 @@
           "args": ["--node-env=development"]
         }
       },
-      "dependsOn": ["generate-prisma-types", "generate-ts-proto"]
+      "dependsOn": ["generate-prisma-types", "^build"]
     },
     "generate-prisma-types": {
       "command": "prisma generate",
@@ -80,9 +80,6 @@
       "options": {
         "passWithNoTests": true
       }
-    },
-    "generate-ts-proto": {
-      "command": "nx generate-ts-proto"
     }
   }
 }

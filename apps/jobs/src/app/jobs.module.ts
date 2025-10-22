@@ -5,7 +5,7 @@ import { JobsService } from './jobs.service';
 import { JobsResolver } from './jobs.resolver';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-import { AUTH_PACKAGE_NAME } from 'types/proto/auth';
+import { AUTH_PACKAGE_NAME } from '@jobber/grpc';
 import { PulsarModule } from '@jobber/pulsar';
 import { ConfigModule } from '@nestjs/config';
 
@@ -20,7 +20,7 @@ import { ConfigModule } from '@nestjs/config';
         transport: Transport.GRPC,
         options: {
           package: AUTH_PACKAGE_NAME,
-          protoPath: join(__dirname, '/proto/auth.proto'),
+          protoPath: join(__dirname, '../../libs/grpc/proto/auth.proto'),
         },
       },
     ]),

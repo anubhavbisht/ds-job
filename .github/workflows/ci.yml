@@ -36,9 +36,39 @@ jobs:
 
       - run: npm ci --legacy-peer-deps
 
-      # Prepend any command with "nx-cloud record --" to record its logs to Nx Cloud
-      # - run: npx nx-cloud record -- echo Hello World
-      # - run: npx nx run-many -t lint test build
-      # Nx Cloud recommends fixes for failures to help you get CI green faster. Learn more: https://nx.dev/ci/features/self-healing-ci
       - run: npx nx fix-ci
         if: always()
+
+      ## github docker login and publish
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          aws-region: ap-south-1
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 961492333341.dkr.ecr.ap-south-1.amazonaws.com
+
+      - name: Build and push all images to ECR
+        run: |
+          IMAGES=(
+            "jobs apps/jobs/Dockerfile"
+            "executor apps/executor/Dockerfile"
+            "auth apps/auth/Dockerfile"
+          )
+
+          for image in "${IMAGES[@]}"; do
+            NAME=$(echo $image | cut -d' ' -f1)
+            DOCKERFILE=$(echo $image | cut -d' ' -f2)
+
+            {
+              docker build \
+                --tag 961492333341.dkr.ecr.ap-south-1.amazonaws.com/jobber/$NAME:latest \
+                -f $DOCKERFILE \
+                . && docker push 961492333341.dkr.ecr.ap-south-1.amazonaws.com/jobber/$NAME:latest
+            } &
+          done
+
+          wait

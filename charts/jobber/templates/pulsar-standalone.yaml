@@ -1,0 +1,26 @@
+{{- if .Values.pulsar.standalone }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pulsar-standalone
+  namespace: pulsar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-pulsar-standalone
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-pulsar-standalone
+    spec:
+      containers:
+        - name: pulsar
+          image: apachepulsar/pulsar:4.0.0
+          args:
+            - bin/pulsar
+            - standalone
+          ports:
+            - containerPort: 6650
+            - containerPort: 8080
+{{- end }}

@@ -13,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  await nestInit(app, 'auth');
+  await nestInit(app, 'Authentication', 'auth');
   app.connectMicroservice<GrpcOptions>({
     transport: Transport.GRPC,
     options: {

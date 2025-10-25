@@ -9,7 +9,7 @@ import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
-  await nestInit(app, 'products');
+  await nestInit(app, 'Products');
   app.connectMicroservice<GrpcOptions>({
     transport: Transport.GRPC,
     options: {

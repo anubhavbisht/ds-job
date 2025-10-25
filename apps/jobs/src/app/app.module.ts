@@ -18,6 +18,7 @@ import { PrismaModule } from './prisma/prisma.module';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       plugins: [new GqlLoggingPlugin()],
+      useGlobalPrefix: true,
       playground: {
         settings: {
           'request.credentials': 'include',

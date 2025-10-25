@@ -15,6 +15,18 @@ spec:
       labels:
         app: jobs
     spec:
+      initContainers:
+        - name: prisma-migrate
+          image: {{ .Values.jobs.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              npx prisma migrate deploy --schema=apps/jobs/prisma/schema.prisma
+          env:
+            {{- include "common.env" . | nindent 12 }}
+            - name: DATABASE_URL
+              value: postgresql://postgres:postgres@{{ .Release.Name }}-postgresql.postgresql.svc.cluster.local:5432/jobs
       containers:
         - name: jobs
           image: {{ .Values.jobs.image }}

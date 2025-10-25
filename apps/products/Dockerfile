@@ -9,7 +9,6 @@ COPY nx.json ./
 COPY tsconfig*.json ./
 COPY jest.config.ts ./
 COPY jest.preset.js ./
-COPY .eslintrc.json ./
 COPY webpack.*.config.js ./
 
 COPY apps/products ./apps/products

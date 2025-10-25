@@ -36,15 +36,15 @@ COPY --from=builder /workspace/apps/jobs/package.json ./apps/jobs/package.json
 COPY --from=builder /workspace/libs/graphql/package.json ./libs/graphql/package.json
 COPY --from=builder /workspace/libs/grpc/package.json ./libs/grpc/package.json
 COPY --from=builder /workspace/libs/pulsar/package.json ./libs/pulsar/package.json
-# COPY --from=builder /workspace/apps/jobs/prisma ./apps/jobs/prisma
-# COPY --from=builder /workspace/libs/prisma/package.json ./libs/prisma/package.json
+COPY --from=builder /workspace/apps/jobs/prisma ./apps/jobs/prisma
+COPY --from=builder /workspace/libs/prisma/package.json ./libs/prisma/package.json
 COPY --from=builder /workspace/package-lock.json ./
 
 ENV NODE_ENV=production
 
 RUN npm ci
 
-# COPY --from=builder /workspace/node_modules/@prisma-clients/jobs/ ./node_modules/@prisma-clients/jobs/
+COPY --from=builder /workspace/node_modules/@prisma-clients/jobs/ ./node_modules/@prisma-clients/jobs/
 COPY --from=builder /workspace/dist ./dist
 
 CMD ["node", "dist/apps/jobs/main"]

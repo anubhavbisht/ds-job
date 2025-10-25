@@ -1,5 +1,7 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
-export class FibonacciMessage {
+import { JobMessage } from './job.message';
+
+export class FibonacciMessage extends JobMessage {
   @IsNumber()
   @IsNotEmpty()
   iterations: number;

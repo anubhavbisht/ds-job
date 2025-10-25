@@ -1,0 +1,98 @@
+# =========================================
+# Global configuration
+# =========================================
+global:
+  imagePullPolicy: Always
+  localDev: false
+
+# =========================================
+# Ingress
+# =========================================
+ingress:
+  alb: true
+
+# =========================================
+# Persistence
+# =========================================
+persistence:
+  ebs: true
+
+# =========================================
+# Auth settings
+# =========================================
+auth:
+  jwt:
+    secure: true
+
+# =========================================
+# Pulsar Configuration
+# =========================================
+pulsar:
+  enabled: true               # Must be true for Pulsar subchart to deploy
+  initialize: true            # Runs init jobs (cluster metadata setup)
+
+  global:
+    storageClass: "ebs-sc"    # Global default StorageClass for Pulsar volumes
+
+  persistence:
+    storageClass: "ebs-sc"    # Default persistence settings
+
+  components:                 # Explicitly enable Pulsar components
+    zookeeper:
+      enabled: true
+    bookkeeper:
+      enabled: true
+    broker:
+      enabled: true
+    proxy:
+      enabled: true
+    toolset:
+      enabled: true
+
+  zookeeper:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      storageClass: "ebs-sc"
+    volumes:
+      data:
+        storageClassName: "ebs-sc"
+
+  bookkeeper:
+    replicaCount: 1
+    volumes:
+      journal:
+        storageClassName: "ebs-sc"
+      ledgers:
+        storageClassName: "ebs-sc"
+
+  broker:
+    replicaCount: 1
+
+  proxy:
+    replicaCount: 1
+
+# =========================================
+# PostgreSQL Configuration
+# =========================================
+postgresql:
+  enabled: true
+  primary:
+    resources:
+      limits:
+        cpu: 1
+    persistence:
+      enabled: true
+      storageClass: "ebs-sc"
+
+# =========================================
+# Disable unwanted monitoring components
+# =========================================
+grafana:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+kube-prometheus-stack:
+  enabled: false

@@ -1,56 +1,39 @@
 global:
   imagePullPolicy: Always
-  localDev: false
+  localDev: true
+
+ingress:
+  alb: false
+
+persistence:
+  ebs: false
 
 #prod version
-pulsar:
-  namespace: pulsar
-  namespaceCreate: true
-  components:
-    proxy: false
-  zookeeper:
-    replicaCount: 1
-    podMonitor:
-      enabled: false
-  broker:
-    replicaCount: 1
-    podMonitor:
-      enabled: false
-  bookkeeper:
-    replicaCount: 1
-    podMonitor:
-      enabled: false
-  autorecovery:
-    podMonitor:
-      enabled: false
-  proxy:
-    podMonitor:
-      enabled: false
-  kube-prometheus-stack:
-    enabled: false
-    prometheusOperator:
-      enabled: false
-    grafana:
-      enabled: false
-    alertmanager:
-      enabled: false
-    prometheus:
-      enabled: false
-
-#minikube version/dev
 # pulsar:
-#   enabled: true
 #   namespace: pulsar
 #   namespaceCreate: true
-#   standalone: true
 #   components:
-#     zookeeper: false
-#     bookkeeper: false
-#     autorecovery: false
-#     broker: false
 #     proxy: false
-#     kube-prometheus-stack:
+#   zookeeper:
+#     replicaCount: 1
+#     podMonitor:
 #       enabled: false
+#   broker:
+#     replicaCount: 1
+#     podMonitor:
+#       enabled: false
+#   bookkeeper:
+#     replicaCount: 1
+#     podMonitor:
+#       enabled: false
+#   autorecovery:
+#     podMonitor:
+#       enabled: false
+#   proxy:
+#     podMonitor:
+#       enabled: false
+#   kube-prometheus-stack:
+#     enabled: false
 #     prometheusOperator:
 #       enabled: false
 #     grafana:
@@ -59,6 +42,29 @@ pulsar:
 #       enabled: false
 #     prometheus:
 #       enabled: false
+
+#minikube version/dev
+pulsar:
+  enabled: true
+  namespace: pulsar
+  namespaceCreate: true
+  standalone: true
+  components:
+    zookeeper: false
+    bookkeeper: false
+    autorecovery: false
+    broker: false
+    proxy: false
+    kube-prometheus-stack:
+      enabled: false
+    prometheusOperator:
+      enabled: false
+    grafana:
+      enabled: false
+    alertmanager:
+      enabled: false
+    prometheus:
+      enabled: false
 
 postgresql:
   namespaceOverride: postgresql

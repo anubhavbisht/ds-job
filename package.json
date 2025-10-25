@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "start": "nx run-many -t serve -p auth jobs executor"
+    "start": "nx run-many -t serve -p auth jobs executor products --parallel 4"
   },
   "workspaces": [
     "apps/*",
@@ -53,6 +53,7 @@
     "@swc/helpers": "~0.5.11",
     "@types/cookie-parser": "^1.4.9",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.0.0",
     "@types/node": "20.19.9",
     "@types/uuid": "^10.0.0",
     "eslint": "^9.8.0",

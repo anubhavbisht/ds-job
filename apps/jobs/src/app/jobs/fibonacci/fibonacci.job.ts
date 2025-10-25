@@ -1,14 +1,14 @@
-import { PulsarClient } from '@jobber/pulsar';
+import { FibonacciMessage, PulsarClient } from '@jobber/pulsar';
 import { Job } from '../../decorators/job.decorator';
 import { AbstractJob } from '../abstract.job';
-import { FibonacciData } from './fibonacci-data.message';
+import { Jobs } from '@jobber/nestjs';
 
 @Job({
-  name: 'Fibonacci',
+  name: Jobs.FIBONACCI,
   description: 'A job that calculates Fibonacci sequence and store it in a DB.',
 })
-export class FibonacciJob extends AbstractJob<FibonacciData> {
-  protected messageClass = FibonacciData;
+export class FibonacciJob extends AbstractJob<FibonacciMessage> {
+  protected messageClass = FibonacciMessage;
   constructor(pulsarClient: PulsarClient) {
     super(pulsarClient);
   }

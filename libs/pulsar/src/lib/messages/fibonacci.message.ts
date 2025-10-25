@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsNumber } from 'class-validator';
-
-export class FibonacciData {
+export class FibonacciMessage {
   @IsNumber()
   @IsNotEmpty()
-  iteration: number;
+  iterations: number;
 }

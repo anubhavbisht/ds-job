@@ -60,7 +60,7 @@ async function executeJobWithInput(executeJobInput, cookies) {
     const executeJobInput = {
       name: 'Fibonacci',
       data: Array.from({ length: n }, () => ({
-        iteration: Math.floor(Math.random() * 5000) + 1,
+        iterations: Math.floor(Math.random() * 5000) + 1,
       })),
     };
     const data = await executeJobWithInput(executeJobInput, cookies);

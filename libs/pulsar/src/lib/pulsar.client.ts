@@ -4,17 +4,19 @@ import { Client, Producer, Consumer, Message } from 'pulsar-client';
 
 @Injectable()
 export class PulsarClient implements OnModuleDestroy {
-  private readonly client = new Client({
-    serviceUrl: this.configService.getOrThrow<string>('PULSAR_SERVICE_URL'),
-  });
-
+  private readonly client: Client;
   private readonly producers: Producer[] = [];
   private readonly consumers: Consumer[] = [];
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    this.client = new Client({
+      serviceUrl: this.configService.getOrThrow<string>('PULSAR_SERVICE_URL'),
+    });
+  }
 
   async createProducer(topic: string) {
     const producer = await this.client.createProducer({
+      blockIfQueueFull: true,
       topic,
     });
     this.producers.push(producer);
@@ -33,9 +35,28 @@ export class PulsarClient implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    for (const producer of this.producers) {
-      await producer.close();
+    for (const consumer of this.consumers) {
+      try {
+        await consumer.close();
+      } catch (err) {
+        console.error('Error closing consumer:', err);
+      }
     }
-    await this.client.close();
+
+    for (const producer of this.producers) {
+      try {
+        await producer.close();
+      } catch (err) {
+        console.error('Error closing producer:', err);
+      }
+    }
+
+    try {
+      await this.client.close();
+    } catch (err) {
+      console.error('Error closing Pulsar client:', err);
+    }
+
+    console.log('✅ Pulsar connections closed gracefully');
   }
 }

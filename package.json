@@ -12,6 +12,7 @@
   "private": true,
   "dependencies": {
     "@as-integrations/express5": "^1.1.2",
+    "@clickhouse/client": "^1.12.1",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.0",
@@ -33,7 +34,8 @@
     "@jobber/graphql": "dist/libs/graphql/main",
     "@jobber/nestjs": "dist/libs/nestjs/main",
     "@jobber/pulsar": "dist/libs/pulsar/main",
-    "@jobber/prisma": "dist/libs/prisma/main"
+    "@jobber/prisma": "dist/libs/prisma/main",
+    "@jobber/clickhouse": "dist/libs/clickhouse/main"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",

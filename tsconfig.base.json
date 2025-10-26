@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@jobber/clickhouse": ["libs/clickhouse/src/index.ts"],
       "@jobber/graphql": ["libs/graphql/src/index.ts"],
       "@jobber/grpc": ["libs/grpc/src/index.ts"],
       "@jobber/nestjs": ["libs/nestjs/src/index.ts"],

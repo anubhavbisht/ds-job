@@ -11,6 +11,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoadProductsJob } from './jobs/products/load-products.job';
 import { PrismaModule } from './prisma/prisma.module';
 import { JobsController } from './jobs.controller';
+import { ResponseETLJob } from './jobs/clickhouse/responseAnalyticsETL.job';
 
 @Module({
   imports: [
@@ -34,6 +35,12 @@ import { JobsController } from './jobs.controller';
     ]),
   ],
   controllers: [JobsController],
-  providers: [FibonacciJob, JobsService, JobsResolver, LoadProductsJob],
+  providers: [
+    FibonacciJob,
+    JobsService,
+    JobsResolver,
+    LoadProductsJob,
+    ResponseETLJob,
+  ],
 })
 export class JobsModule {}

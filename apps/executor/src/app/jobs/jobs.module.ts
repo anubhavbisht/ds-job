@@ -1,11 +1,17 @@
-import { PulsarModule } from '@jobber/pulsar';
 import { Module } from '@nestjs/common';
-import { FibonacciConsumer } from './fibonacci/fibonacci.consumer';
+import { PulsarModule } from '@jobber/pulsar';
 import { LoadProductModule } from './products/load-products.module';
 import { JobClientsModule } from './job-clients.module';
+import { FibonacciConsumer } from './fibonacci/fibonacci.consumer';
+import { ResponseAnalyticsModule } from './clickhouse/response-analytics/response-analytics.module';
 
 @Module({
-  imports: [PulsarModule, LoadProductModule, JobClientsModule],
+  imports: [
+    PulsarModule,
+    LoadProductModule,
+    JobClientsModule,
+    ResponseAnalyticsModule,
+  ],
   providers: [FibonacciConsumer],
 })
 export class JobsModule {}

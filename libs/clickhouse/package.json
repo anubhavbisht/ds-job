@@ -1,0 +1,8 @@
+{
+  "name": "@jobber/clickhouse",
+  "version": "0.0.0",
+  "dependencies": {
+    "@clickhouse/client": "^1.12.1"
+  },
+  "devDependencies": {}
+}

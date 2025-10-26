@@ -15,10 +15,11 @@ export abstract class AbstractJob<T extends object> {
     private readonly prismaService: PrismaService
   ) {}
 
-  async execute(data: T, name: string) {
+  async execute(data: T | T[], name: string) {
     if (!this.producer) {
       this.producer = await this.pulsarClient.createProducer(name);
     }
+
     const job = await this.prismaService.job.create({
       data: {
         name,
@@ -27,20 +28,35 @@ export abstract class AbstractJob<T extends object> {
         status: JobStatus.IN_PROGRESS,
       },
     });
-    if (Array.isArray(data)) {
-      for (const message of data) {
-        this.send({ ...message, jobId: job.id });
-      }
-      return job;
-    }
-    this.send({ ...data, jobId: job.id });
+
+    const messages = Array.isArray(data) ? data : [data];
+
+    // Wait for all sends to complete safely
+    await Promise.all(
+      messages.map((msg) => this.send({ ...msg, jobId: job.id }))
+    );
+
     return job;
   }
 
-  private send(data: T) {
-    this.validateData(data).then(() =>
-      this.producer.send({ data: serialize(data) })
-    );
+  private async send(data: T & { jobId?: string | number }) {
+    // ✅ Await validation
+    await this.validateData(data);
+
+    // ✅ Generate a deterministic key for KeyShared routing
+    const key =
+      (data as any).campaignId ||
+      (data as any).id ||
+      (data as any).jobId?.toString() || // 👈 convert number → string
+      'default';
+
+    console.log(`[Producer] Sending key=${key}`);
+
+    // ✅ Await producer.send to ensure message is acknowledged by Pulsar
+    await this.producer.send({
+      partitionKey: key,
+      data: serialize(data),
+    });
   }
 
   private async validateData(data: T) {

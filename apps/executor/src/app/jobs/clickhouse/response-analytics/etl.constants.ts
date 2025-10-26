@@ -16,7 +16,6 @@ export const CLICKHOUSE_SETTINGS_SQL = `
       max_memory_usage_for_user = 0,   -- no user-wide cap
       max_bytes_before_external_group_by = 8000000000,
       max_bytes_before_external_sort = 8000000000,
-      max_bytes_before_external_join = 8000000000,
       max_temporary_data_on_disk = 40000000000,
       temporary_files_codec = 'LZ4',
 
@@ -29,25 +28,5 @@ export const CLICKHOUSE_SETTINGS_SQL = `
       join_algorithm = 'parallel_hash, grace_hash, partial_merge, hash',
       join_use_nulls = 1,
       distributed_aggregation_memory_efficient = 1,
-
-      /* INSERT + IO BEHAVIOR */
-      max_insert_block_size = 500000,
-      async_insert = 1,
-      wait_for_async_insert = 0,
-      max_insert_threads = 8,
-      insert_distributed_sync = 1,
-
-      /* NETWORK TIMEOUTS */
-      send_timeout = 600,
-      receive_timeout = 600,
-      connect_timeout = 60,
-
-      /* TEMP STORAGE + RESOURCE CONTROL */
-      temporary_storage_use_for_user = 'allow',
-      temporary_files_codec = 'LZ4',
-
-      /* LOGGING + DIAGNOSTICS */
-      log_queries = 1,
-      log_profile_events = 1,
-      trace_log_enable = 0;
-  `;
+...
+`;

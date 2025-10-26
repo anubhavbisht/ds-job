@@ -1,6 +1,6 @@
 export const ETL_METADATA_TABLE = 'etl_metadata';
 
-export const BATCH_MS = 1000 * 60 * 60 * 24 * 5;
+export const BATCH_MS = 1000 * 60 * 60 * 24 * 10;
 export const OVERLAP_MS = 45 * 60 * 1000;
 export const CONCURRENCY = 1;
 

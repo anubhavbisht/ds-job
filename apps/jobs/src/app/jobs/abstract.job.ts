@@ -38,26 +38,16 @@ export abstract class AbstractJob<T extends object> {
     return job;
   }
 
-  private async send(data: T & { jobId?: string | number }) {
+  private async send(data: T & { jobId?: number }) {
     await this.validateData(data);
-
-    const key =
-      (data as any).campaignId ||
-      (data as any).id ||
-      (data as any).jobId?.toString() || // 👈 convert number → string
-      'default';
-
-    console.log(`[Producer] Sending key=${key}`);
-
     await this.producer.send({
-      partitionKey: key,
       data: serialize(data),
     });
   }
 
   private async validateData(data: T) {
     const errors = await validate(plainToInstance(this.messageClass, data));
-    if (errors.length) {
+    if (errors.length > 0) {
       throw new BadRequestException(
         `Job data is invalid: ${JSON.stringify(errors)}`
       );

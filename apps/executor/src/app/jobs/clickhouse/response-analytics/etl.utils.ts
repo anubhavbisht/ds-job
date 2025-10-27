@@ -207,21 +207,25 @@ ORDER BY ${orderBy};
 `.trim();
 }
 
-export async function getCampaignName(
+export async function getTableName(
   ch: ClickhouseService,
   campaignId: string,
   logger: Logger
 ): Promise<string> {
   const sql = `
-    SELECT name
+    SELECT 
+      Campaigns.name AS campaignName, 
+      Organizations.name AS orgName
     FROM Campaigns
-    WHERE id = '${campaignId}'
+    INNER JOIN Organizations 
+      ON Organizations.id = Campaigns.organizationId
+    WHERE Campaigns.id = '${campaignId}'
     LIMIT 1
   `;
 
   const res = await runWithRetry(
-    () => ch.query<{ name: string }>(sql, 'JSON'),
-    'getCampaignName',
+    () => ch.query<{ campaignName: string; orgName: string }>(sql, 'JSON'),
+    'getTableName',
     logger
   );
 
@@ -229,11 +233,11 @@ export async function getCampaignName(
     throw new Error(`[ETL] No campaign found for ID ${campaignId}`);
   }
 
-  let name = res[0].name || `unknown_${campaignId}`;
-  name = sanitizeTableIdentifier(name);
+  const cName = sanitizeTableIdentifier(res[0].campaignName);
+  const oName = sanitizeTableIdentifier(res[0].orgName);
 
-  logger.log(`[ETL] Using campaign name "${name}" for analytics table`);
-  return name;
+  logger.log(`[ETL] Using campaign name "${cName}" for analytics table`);
+  return `${oName}_${cName}`;
 }
 
 export function sanitizeTableIdentifier(name: string): string {

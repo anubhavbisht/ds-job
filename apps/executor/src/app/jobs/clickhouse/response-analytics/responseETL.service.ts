@@ -12,10 +12,10 @@ import {
   doesTableExist,
   ensureColumnsAdded,
   formatISO,
-  getCampaignName,
   getDynamicKeys,
   getLastRunTime,
   getTableColumnsOrdered,
+  getTableName,
   insertLastRunTime,
   qid,
   sleep,
@@ -28,12 +28,12 @@ export class ResponseAnalyticsEtlService {
   constructor(private readonly clickhouse: ClickhouseService) {}
 
   async run(campaignId: string): Promise<void> {
-    const campaignName = await getCampaignName(
+    const analyticsTableName = await getTableName(
       this.clickhouse,
       campaignId,
       this.logger
     );
-    const ANALYTICS_TABLE = `responseAnalytics_${campaignName}`;
+    const ANALYTICS_TABLE = `responseAnalytics_${analyticsTableName}`;
     const startTime = Date.now();
 
     this.logger.log(

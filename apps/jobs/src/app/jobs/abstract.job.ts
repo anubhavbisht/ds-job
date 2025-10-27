@@ -31,7 +31,6 @@ export abstract class AbstractJob<T extends object> {
 
     const messages = Array.isArray(data) ? data : [data];
 
-    // Wait for all sends to complete safely
     await Promise.all(
       messages.map((msg) => this.send({ ...msg, jobId: job.id }))
     );
@@ -40,10 +39,8 @@ export abstract class AbstractJob<T extends object> {
   }
 
   private async send(data: T & { jobId?: string | number }) {
-    // ✅ Await validation
     await this.validateData(data);
 
-    // ✅ Generate a deterministic key for KeyShared routing
     const key =
       (data as any).campaignId ||
       (data as any).id ||
@@ -52,7 +49,6 @@ export abstract class AbstractJob<T extends object> {
 
     console.log(`[Producer] Sending key=${key}`);
 
-    // ✅ Await producer.send to ensure message is acknowledged by Pulsar
     await this.producer.send({
       partitionKey: key,
       data: serialize(data),

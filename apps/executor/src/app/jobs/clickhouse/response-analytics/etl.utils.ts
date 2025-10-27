@@ -50,7 +50,7 @@ export async function getLastRunTime(
   `;
 
   const res = await runWithRetry(
-    () => ch.query<{ last_run: string }>(sql, 'JSON'), // 👈 explicitly specify JSON
+    () => ch.query<{ last_run: string }>(sql, 'JSON'),
     'getLastRunTime',
     logger
   );
@@ -112,7 +112,6 @@ export async function getDynamicKeys(
     ),
   ]);
 
-  // ✅ Type-safe: questions & fields are arrays, not strings
   const questionKeys = questions.map((q) => ({
     id: q.questionId.toString(),
     type: q.type,
@@ -166,12 +165,11 @@ export async function getTableColumnsOrdered(
   `;
 
   const res = await runWithRetry(
-    () => ch.query<{ name: string }>(sql, 'JSON'), // 👈 specify JSON format
+    () => ch.query<{ name: string }>(sql, 'JSON'),
     'getTableColumnsOrdered',
     logger
   );
 
-  // 👇 Type guard (optional)
   if (typeof res === 'string') {
     logger.error(`[ETL] Unexpected CSV format for getTableColumnsOrdered`);
     throw new Error('Expected JSON result but got CSV');
@@ -199,6 +197,8 @@ CREATE TABLE IF NOT EXISTS ${tableName}
   participantListMemberId UUID,
   participantId UUID,
   responseId String,
+  surveyCreationDate DateTime,     
+  responseFilledDate DateTime,     
   _peerdb_synced_at DateTime
 )
 ENGINE = ${engine}

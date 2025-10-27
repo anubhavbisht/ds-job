@@ -6,9 +6,9 @@ import {
   CONCURRENCY,
   ETL_METADATA_TABLE,
   OVERLAP_MS,
-} from './etl.constants';
+} from '../etl.constants';
 import {
-  createAnalyticsTableSQL,
+  createResponseAnalyticsTableSQL,
   doesTableExist,
   ensureColumnsAdded,
   formatISO,
@@ -19,7 +19,7 @@ import {
   insertLastRunTime,
   qid,
   sleep,
-} from './etl.utils';
+} from '../etl.utils';
 
 @Injectable()
 export class ResponseAnalyticsEtlService {
@@ -56,7 +56,7 @@ export class ResponseAnalyticsEtlService {
     if (!tableExists) {
       this.logger.log(`[ETL] Creating missing table ${ANALYTICS_TABLE}`);
 
-      const sql = createAnalyticsTableSQL(ANALYTICS_TABLE);
+      const sql = createResponseAnalyticsTableSQL(ANALYTICS_TABLE);
 
       await runWithRetry(
         () => this.clickhouse.command(sql),

@@ -12,6 +12,7 @@ import { LoadProductsJob } from './jobs/products/load-products.job';
 import { PrismaModule } from './prisma/prisma.module';
 import { JobsController } from './jobs.controller';
 import { ResponseETLJob } from './jobs/clickhouse/responseAnalyticsETL.job';
+import { ScheduleETLJob } from './jobs/clickhouse/scheduleAnalyticsETL.job';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { ResponseETLJob } from './jobs/clickhouse/responseAnalyticsETL.job';
     JobsResolver,
     LoadProductsJob,
     ResponseETLJob,
+    ScheduleETLJob,
   ],
 })
 export class JobsModule {}

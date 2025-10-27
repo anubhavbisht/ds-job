@@ -178,7 +178,7 @@ export async function getTableColumnsOrdered(
   return res.map((r) => r.name);
 }
 
-export function createAnalyticsTableSQL(
+export function createResponseAnalyticsTableSQL(
   tableName: string,
   options?: {
     engine?: string;
@@ -205,6 +205,49 @@ ENGINE = ${engine}
 PARTITION BY ${partitionBy}
 ORDER BY ${orderBy};
 `.trim();
+}
+
+export function createScheduleAnalyticsTableSQL(
+  tableName: string,
+  options?: {
+    engine?: string;
+    partitionBy?: string;
+    orderBy?: string;
+  }
+): string {
+  const engine = options?.engine ?? 'ReplacingMergeTree(_peerdb_synced_at)';
+  const partitionBy = options?.partitionBy ?? 'toYYYYMM(_peerdb_synced_at)';
+  const orderBy = options?.orderBy ?? '(participantListMemberId, scheduleId)';
+
+  return `
+    CREATE TABLE IF NOT EXISTS ${tableName}
+  (
+    participantListMemberId UUID,
+    participantListId UUID,
+    participantId UUID,
+    createdAt DateTime,
+    token String,
+    visited UInt8,
+    scheduleId UUID,
+    scheduleDateAndTime DateTime,
+    sentStatus LowCardinality(String),
+    sendTo LowCardinality(String),
+    provider LowCardinality(String),
+    isAutoReminder UInt8,
+    distributionTemplateId String,
+    listName LowCardinality(String),
+    distributionId UUID,
+    success UInt8,
+    triggeredAt DateTime,
+    providerId LowCardinality(String),
+    templateName LowCardinality(String),
+    distributionChannel LowCardinality(String),
+    _peerdb_synced_at DateTime
+  )
+  ENGINE = ${engine}
+  PARTITION BY ${partitionBy}
+  ORDER BY ${orderBy};
+  `.trim();
 }
 
 export async function getTableName(

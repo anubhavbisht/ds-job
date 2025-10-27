@@ -17,7 +17,7 @@ export class ClickhouseResponseConsumer extends JobConsumer<ResponseClickhouseMe
   }
 
   protected async execute(data: ResponseClickhouseMessage): Promise<void> {
-    this.logger.log(`Triggering ETL for campaign: ${data.campaignId}`);
+    this.logger.log(`Triggering Response ETL for campaign: ${data.campaignId}`);
     await this.etl.run(data.campaignId);
   }
 }

@@ -40,17 +40,14 @@ export class ResponseAnalyticsEtlService {
       `[ETL] 🚀 Starting response_analytics ETL for campaign ${campaignId}`
     );
 
-    // ✅ Preflight health check
     await this.safeHealthCheck();
 
-    // ✅ Apply ClickHouse session settings (with retry)
     await runWithRetry(
       () => this.clickhouse.command(CLICKHOUSE_SETTINGS_SQL),
       'apply-settings',
       this.logger
     );
 
-    // ✅ Ensure analytics table exists
     const tableExists = await doesTableExist(
       this.clickhouse,
       ANALYTICS_TABLE,
@@ -58,7 +55,9 @@ export class ResponseAnalyticsEtlService {
     );
     if (!tableExists) {
       this.logger.log(`[ETL] Creating missing table ${ANALYTICS_TABLE}`);
+
       const sql = createAnalyticsTableSQL(ANALYTICS_TABLE);
+
       await runWithRetry(
         () => this.clickhouse.command(sql),
         'create-table',
@@ -66,7 +65,6 @@ export class ResponseAnalyticsEtlService {
       );
     }
 
-    // ✅ Load dynamic schema keys
     const { questionKeys, participantKeys } = await getDynamicKeys(
       this.clickhouse,
       campaignId,
@@ -80,7 +78,6 @@ export class ResponseAnalyticsEtlService {
       this.logger
     );
 
-    // ✅ Retrieve existing columns + build expressions
     const tableCols = await getTableColumnsOrdered(
       this.clickhouse,
       'zykrr_production',
@@ -93,7 +90,6 @@ export class ResponseAnalyticsEtlService {
       exprMap
     );
 
-    // ✅ Determine mode (first load vs incremental)
     const lastRun = await getLastRunTime(
       this.clickhouse,
       ETL_METADATA_TABLE,
@@ -125,8 +121,6 @@ export class ResponseAnalyticsEtlService {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 Health Check Wrapper
   private async safeHealthCheck() {
     try {
       await this.clickhouse.healthCheck();
@@ -137,8 +131,6 @@ export class ResponseAnalyticsEtlService {
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 First Load ETL
   private async runFirstLoad(
     campaignId: string,
     ANALYTICS_TABLE: string,
@@ -222,15 +214,13 @@ export class ResponseAnalyticsEtlService {
               `[ETL] ❌ Batch ${b.batchEndISO} failed: ${err.message}`
             );
           } finally {
-            await sleep(200); // smooth out heavy loads
+            await sleep(200);
           }
         })
       );
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 Incremental ETL
   private async runIncremental(
     campaignId: string,
     ANALYTICS_TABLE: string,
@@ -269,14 +259,15 @@ export class ResponseAnalyticsEtlService {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔹 Expression Builders (unchanged)
   private buildSelectExprMap(qks: any[], pks: string[]) {
     const map: Record<string, string> = {
       participantListId: 'plm.participantListId',
       participantListMemberId: 'plm.participantListMemberId',
       participantId: 'plm.participantId',
       responseId: 'toString(rj.responseId) AS responseId',
+      surveyCreationDate: 'plm.createdAt AS surveyCreationDate',
+      responseFilledDate: 'rj.createdAt AS responseFilledDate',
+
       _peerdb_synced_at: `greatest(
         ifNull(plm.plm_synced_at, toDateTime('1970-01-01 00:00:00')),
         ifNull(pl.list_synced_at, toDateTime('1970-01-01 00:00:00')),
@@ -288,18 +279,20 @@ export class ResponseAnalyticsEtlService {
     for (const q of qks) {
       if (q.isMultiSelect) {
         map[q.id] = `
-coalesce(
-  JSONExtract(rj.answers, '${q.id}', 'Array(String)'),
-  JSONExtract(plm.prefilledData, '${q.id}', 'Array(String)')
-) AS ${qid(q.id)}`.trim();
+    coalesce(
+      JSONExtract(rj.answers, '${q.id}', 'Array(String)'),
+      JSONExtract(plm.prefilledData, '${q.id}', 'Array(String)')
+    ) AS ${qid(q.id)}`.trim();
       } else {
         map[q.id] = `
-coalesce(
-  arrayElement(JSONExtract(rj.answers, '${q.id}', 'Array(String)'), 1),
-  arrayElement(JSONExtract(plm.prefilledData, '${q.id}', 'Array(String)'), 1),
-  JSONExtractString(rj.answers, '${q.id}'),
-  JSONExtractString(plm.prefilledData, '${q.id}')
-) AS ${qid(q.id)}`.trim();
+    coalesce(
+      arrayElement(JSONExtract(rj.answers, '${q.id}', 'Array(String)'), 1),
+      arrayElement(JSONExtract(plm.prefilledData, '${
+        q.id
+      }', 'Array(String)'), 1),
+      JSONExtractString(rj.answers, '${q.id}'),
+      JSONExtractString(plm.prefilledData, '${q.id}')
+    ) AS ${qid(q.id)}`.trim();
       }
     }
 
@@ -317,7 +310,10 @@ coalesce(
       'participantListMemberId',
       'participantId',
       'responseId',
+      'surveyCreationDate',
+      'responseFilledDate',
     ];
+
     const DYN = allCols.filter(
       (c) => !BASE.includes(c) && c !== '_peerdb_synced_at'
     );
@@ -332,34 +328,34 @@ coalesce(
     endISO: string
   ) {
     return `
-WITH campaign_participants AS (
-  SELECT p.id AS participantId, p.fields, p.createdAt, p._peerdb_synced_at AS participant_synced_at
-  FROM Participants p
-  INNER JOIN Campaigns c ON c.organizationId = p.organizationId
-  WHERE c.id='${campaignId}'
-    AND p.createdAt >= parseDateTimeBestEffort('${startISO}')
-    AND p.createdAt <  parseDateTimeBestEffort('${endISO}')
-),
-participant_members AS (
-  SELECT id AS participantListMemberId, participantListId, participantId, prefilledData, _peerdb_synced_at AS plm_synced_at
-  FROM ParticipantListMembers
-  WHERE participantId IN (SELECT participantId FROM campaign_participants)
-),
-participant_lists AS (
-  SELECT id AS participantListId, listName, _peerdb_synced_at AS list_synced_at
-  FROM ParticipantLists
-  WHERE campaignId='${campaignId}'
-),
-response_join AS (
-  SELECT id AS responseId, participantListMemberId, answers, participantId, _peerdb_synced_at AS response_synced_at
-  FROM Responses
-)
-SELECT
-  /* SELECT_LIST_PLACEHOLDER */
-FROM participant_members plm
-INNER JOIN participant_lists pl ON pl.participantListId = plm.participantListId
-INNER JOIN campaign_participants p ON p.participantId = plm.participantId
-LEFT JOIN response_join rj ON rj.participantListMemberId = plm.participantListMemberId
+  WITH campaign_participants AS (
+    SELECT p.id AS participantId, p.fields, p.createdAt, p._peerdb_synced_at AS participant_synced_at
+    FROM Participants p
+    INNER JOIN Campaigns c ON c.organizationId = p.organizationId
+    WHERE c.id='${campaignId}'
+      AND p.createdAt >= parseDateTimeBestEffort('${startISO}')
+      AND p.createdAt <  parseDateTimeBestEffort('${endISO}')
+  ),
+  participant_members AS (
+    SELECT id AS participantListMemberId, participantListId, participantId, prefilledData, createdAt, _peerdb_synced_at AS plm_synced_at
+    FROM ParticipantListMembers
+    WHERE participantId IN (SELECT participantId FROM campaign_participants)
+  ),
+  participant_lists AS (
+    SELECT id AS participantListId, listName, _peerdb_synced_at AS list_synced_at
+    FROM ParticipantLists
+    WHERE campaignId='${campaignId}'
+  ),
+  response_join AS (
+    SELECT id AS responseId, participantListMemberId, answers, participantId, createdAt, _peerdb_synced_at AS response_synced_at
+    FROM Responses
+  )
+  SELECT
+    /* SELECT_LIST_PLACEHOLDER */
+  FROM participant_members plm
+  INNER JOIN participant_lists pl ON pl.participantListId = plm.participantListId
+  INNER JOIN campaign_participants p ON p.participantId = plm.participantId
+  LEFT JOIN response_join rj ON rj.participantListMemberId = plm.participantListMemberId
 `.trim();
   }
 
@@ -369,73 +365,73 @@ LEFT JOIN response_join rj ON rj.participantListMemberId = plm.participantListMe
     endISO: string
   ) {
     return `
-WITH changed_participants AS (
-  SELECT DISTINCT p.id AS participantId
-  FROM Participants p
-  INNER JOIN Campaigns c ON c.organizationId = p.organizationId
-  WHERE c.id='${campaignId}'
-    AND p._peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
-),
-changed_plms AS (
-  SELECT DISTINCT plm.participantId, plm.participantListId
-  FROM ParticipantListMembers plm
-  INNER JOIN ParticipantLists pl ON pl.id = plm.participantListId
-  WHERE plm._peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
-    AND pl.campaignId='${campaignId}'
-),
-changed_lists AS (
-  SELECT DISTINCT id AS participantListId
-  FROM ParticipantLists
-  WHERE campaignId='${campaignId}'
-    AND _peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
-),
-changed_responses AS (
-  SELECT DISTINCT r.participantId
-  FROM Responses r
-  INNER JOIN Campaigns c ON c.id = r.campaignId
-  WHERE c.id='${campaignId}'
-    AND r._peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
-),
-changed_scope AS (
-  SELECT participantId FROM changed_participants
-  UNION ALL SELECT participantId FROM changed_plms
-  UNION ALL SELECT participantId FROM changed_responses
-  UNION ALL
-  SELECT participantId
-  FROM ParticipantListMembers
-  WHERE participantListId IN (SELECT participantListId FROM changed_lists)
-),
-campaign_participants AS (
-  SELECT p.id AS participantId, p.fields, p._peerdb_synced_at AS participant_synced_at
-  FROM Participants p
-  WHERE p.id IN (SELECT participantId FROM changed_scope)
-),
-participant_members AS (
-  SELECT id AS participantListMemberId, participantListId, participantId, prefilledData, _peerdb_synced_at AS plm_synced_at
-  FROM ParticipantListMembers
-  WHERE participantId IN (SELECT participantId FROM changed_scope)
-),
-participant_lists AS (
-  SELECT id AS participantListId, listName, _peerdb_synced_at AS list_synced_at
-  FROM ParticipantLists
-  WHERE participantListId IN (SELECT participantListId FROM participant_members)
-),
-response_join AS (
-  SELECT id AS responseId, participantListMemberId, answers, participantId, _peerdb_synced_at AS response_synced_at
-  FROM Responses
-  WHERE participantListMemberId IN (SELECT participantListMemberId FROM participant_members)
-)
-SELECT
-  /* SELECT_LIST_PLACEHOLDER */
-FROM participant_members plm
-INNER JOIN participant_lists pl ON pl.participantListId = plm.participantListId
-INNER JOIN campaign_participants p ON p.participantId = plm.participantId
-LEFT JOIN response_join rj ON rj.participantListMemberId = plm.participantListMemberId
+  WITH changed_participants AS (
+    SELECT DISTINCT p.id AS participantId
+    FROM Participants p
+    INNER JOIN Campaigns c ON c.organizationId = p.organizationId
+    WHERE c.id='${campaignId}'
+      AND p._peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
+  ),
+  changed_plms AS (
+    SELECT DISTINCT plm.participantId, plm.participantListId
+    FROM ParticipantListMembers plm
+    INNER JOIN ParticipantLists pl ON pl.id = plm.participantListId
+    WHERE plm._peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
+      AND pl.campaignId='${campaignId}'
+  ),
+  changed_lists AS (
+    SELECT DISTINCT id AS participantListId
+    FROM ParticipantLists
+    WHERE campaignId='${campaignId}'
+      AND _peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
+  ),
+  changed_responses AS (
+    SELECT DISTINCT r.participantId
+    FROM Responses r
+    INNER JOIN Campaigns c ON c.id = r.campaignId
+    WHERE c.id='${campaignId}'
+      AND r._peerdb_synced_at BETWEEN parseDateTimeBestEffort('${startISO}') AND parseDateTimeBestEffort('${endISO}')
+  ),
+  changed_scope AS (
+    SELECT participantId FROM changed_participants
+    UNION ALL SELECT participantId FROM changed_plms
+    UNION ALL SELECT participantId FROM changed_responses
+    UNION ALL
+    SELECT participantId
+    FROM ParticipantListMembers
+    WHERE participantListId IN (SELECT participantListId FROM changed_lists)
+  ),
+  campaign_participants AS (
+    SELECT p.id AS participantId, p.fields, p._peerdb_synced_at AS participant_synced_at
+    FROM Participants p
+    WHERE p.id IN (SELECT participantId FROM changed_scope)
+  ),
+  participant_members AS (
+    SELECT id AS participantListMemberId, participantListId, participantId, prefilledData, createdAt, _peerdb_synced_at AS plm_synced_at
+    FROM ParticipantListMembers
+    WHERE participantId IN (SELECT participantId FROM changed_scope)
+  ),
+  participant_lists AS (
+    SELECT id AS participantListId, listName, _peerdb_synced_at AS list_synced_at
+    FROM ParticipantLists
+    WHERE participantListId IN (SELECT participantListId FROM participant_members)
+  ),
+  response_join AS (
+    SELECT id AS responseId, participantListMemberId, answers, participantId, createdAt, _peerdb_synced_at AS response_synced_at
+    FROM Responses
+    WHERE participantListMemberId IN (SELECT participantListMemberId FROM participant_members)
+  )
+  SELECT
+    /* SELECT_LIST_PLACEHOLDER */
+  FROM participant_members plm
+  INNER JOIN participant_lists pl ON pl.participantListId = plm.participantListId
+  INNER JOIN campaign_participants p ON p.participantId = plm.participantId
+  LEFT JOIN response_join rj ON rj.participantListMemberId = plm.participantListMemberId
 `.trim();
   }
 
   private wrapInsertWithColumns(
-    ANALYTICS_TABLE,
+    ANALYTICS_TABLE: string,
     cols: string[],
     selects: string[],
     selectBody: string
